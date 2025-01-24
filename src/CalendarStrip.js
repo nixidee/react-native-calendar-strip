@@ -238,7 +238,7 @@ class CalendarStrip extends Component {
   //Set startingDate to the previous week
   getPreviousWeek = () => {
     if (this.props.scrollable) {
-      this.scroller.scrollLeft();
+      this.scroller?.scrollLeft();
       return;
     }
     this.animations = [];
@@ -250,7 +250,7 @@ class CalendarStrip extends Component {
   //Set startingDate to the next week
   getNextWeek = () => {
     if (this.props.scrollable) {
-      this.scroller.scrollRight();
+      this.scroller?.scrollRight();
       return;
     }
     this.animations = [];
@@ -284,7 +284,7 @@ class CalendarStrip extends Component {
   // updateWeekView allows external callers to update the visible week.
   updateWeekView = date => {
     if (this.props.scrollable) {
-      this.scroller.scrollToDate(date);
+      this.scroller?.scrollToDate(date);
       return;
     }
 
@@ -328,7 +328,7 @@ class CalendarStrip extends Component {
       // Scroll to selected date, centered in the week
       const scrolledDate = moment(mDate);
       scrolledDate.subtract(Math.floor(this.props.numDaysInWeek / 2), "days");
-      this.scroller.scrollToDate(scrolledDate);
+      this.scroller?.scrollToDate(scrolledDate);
     }
   }
 
@@ -519,7 +519,13 @@ class CalendarStrip extends Component {
 
       const _weekStartDate = weekStartDate && weekStartDate.clone();
       const _weekEndDate = weekEndDate && weekEndDate.clone();
-      onWeekChanged && onWeekChanged(_weekStartDate, _weekEndDate);
+      //onWeekChanged && onWeekChanged(_weekStartDate, _weekEndDate);
+      if (
+          !weekStartDate.isSame(this.state.weekStartDate, "day") ||
+          !weekEndDate.isSame(this.state.weekEndDate, "day")
+      ) {
+        onWeekChanged && onWeekChanged(_weekStartDate, _weekEndDate);
+      }
     }
     // else Scroller sets weekStart/EndDate and fires onWeekChanged.
 

@@ -43,7 +43,7 @@ export default class CalendarScroller extends Component {
       const itemWidth = renderDayParams.width + renderDayParams.marginHorizontal * 2;
 
       const layoutProvider = new LayoutProvider(
-        index => 0, // only 1 view type
+        (index) => 0, // only 1 view type
         (type, dim) => {
           dim.width = itemWidth;
           dim.height = itemHeight;
@@ -51,19 +51,19 @@ export default class CalendarScroller extends Component {
       );
 
       return { layoutProvider, itemHeight, itemWidth };
-    }
+    };
 
     this.dataProvider = new DataProvider((r1, r2) => {
       return r1 !== r2;
     });
 
-    this.updateDaysData = data => {
+    this.updateDaysData = (data) => {
       return {
         data,
         numDays: data.length,
         dataProvider: this.dataProvider.cloneWithRows(data),
-      }
-    }
+      };
+    };
 
     this.state = {
       ...this.updateLayout(props.renderDayParams),
@@ -93,7 +93,7 @@ export default class CalendarScroller extends Component {
       newState = this.updateLayout(this.props.renderDayParams);
     }
 
-    if (selectedDate !== prevProps.renderDayParams.selectedDate) {
+    if (!selectedDate.isSame(prevProps.renderDayParams.selectedDate)) {
       this.scrollToDate(selectedDate);
     }
 
@@ -113,18 +113,18 @@ export default class CalendarScroller extends Component {
       return;
     }
     const newIndex = Math.max(this.state.visibleStartIndex - this.state.numVisibleItems, 0);
-    this.rlv.scrollToIndex(newIndex, true);
-  }
+    this.rlv?.scrollToIndex(newIndex, true);
+  };
 
   // Scroll right, guarding against end index.
   scrollRight = () => {
     const newIndex = this.state.visibleStartIndex + this.state.numVisibleItems;
     if (newIndex >= (this.state.numDays - 1)) {
-      this.rlv.scrollToEnd(true); // scroll to the very end, including padding
+      this.rlv?.scrollToEnd(true); // scroll to the very end, including padding
       return;
     }
-    this.rlv.scrollToIndex(newIndex, true);
-  }
+    this.rlv?.scrollToIndex(newIndex, true);
+  };
 
   // Scroll to given date, and check against min and max date if available.
   scrollToDate = (date) => {
@@ -147,21 +147,21 @@ export default class CalendarScroller extends Component {
         break;
       }
     }
-  }
+  };
 
   // Shift dates when end of list is reached.
   shiftDaysForward = (visibleStartDate = this.state.visibleStartDate) => {
     const prevVisStart = visibleStartDate.clone();
     const newStartDate = prevVisStart.clone().subtract(Math.floor(this.state.numDays / 3), "days");
     this.updateDays(prevVisStart, newStartDate);
-  }
+  };
 
   // Shift dates when beginning of list is reached.
   shiftDaysBackward = (visibleStartDate) => {
     const prevVisStart = visibleStartDate.clone();
     const newStartDate = prevVisStart.clone().subtract(Math.floor(this.state.numDays * 2/3), "days");
     this.updateDays(prevVisStart, newStartDate);
-  }
+  };
 
   updateDays = (prevVisStart, newStartDate) => {
     if (this.shifting) {
@@ -192,12 +192,12 @@ export default class CalendarScroller extends Component {
     for (let i = 0; i < data.length; i++) {
       if (data[i].date.isSame(prevVisStart, "day")) {
         this.shifting = true;
-        this.rlv.scrollToIndex(i, false);
+        this.rlv?.scrollToIndex(i, false);
         // RecyclerListView sometimes returns position to old index after
         // moving to the new one. Set position again after delay.
         this.timeoutResetPositionId = setTimeout(() => {
           this.timeoutResetPositionId = null;
-          this.rlv.scrollToIndex(i, false);
+          this.rlv?.scrollToIndex(i, false);
           this.shifting = false; // debounce
         }, 800);
         break;
@@ -207,7 +207,7 @@ export default class CalendarScroller extends Component {
       data,
       dataProvider: this.dataProvider.cloneWithRows(data),
     });
-  }
+  };
 
   // Track which dates are visible.
   onVisibleIndicesChanged = (all, now, notNow) => {
@@ -262,7 +262,7 @@ export default class CalendarScroller extends Component {
       visibleEndDate,
       visibleStartIndex,
     });
-  }
+  };
 
   onScrollStart = (event) => {
     const {onWeekScrollStart} = this.props;
@@ -271,7 +271,7 @@ export default class CalendarScroller extends Component {
     if (onWeekScrollStart && prevStartDate && prevEndDate) {
       onWeekScrollStart(prevStartDate.clone(), prevEndDate.clone());
     }
-  }
+  };
 
   onScrollEnd = () => {
     const {onWeekScrollEnd} = this.props;
@@ -282,7 +282,7 @@ export default class CalendarScroller extends Component {
         onWeekScrollEnd(visibleStartDate.clone(), visibleEndDate.clone());
       }
     }
-  }
+  };
 
   onScrollBeginDrag = () => {
     const {
@@ -309,18 +309,18 @@ export default class CalendarScroller extends Component {
       prevStartDate,
       prevEndDate,
     });
-  }
+  };
 
-  onLayout = event => {
+  onLayout = (event) => {
     let width = event.nativeEvent.layout.width;
     this.setState({
       numVisibleItems: Math.round(width / this.state.itemWidth),
     });
-  }
+  };
 
   rowRenderer = (type, data, i, extState) => {
     return this.props.renderDay && this.props.renderDay({...data, ...extState});
-  }
+  };
 
   render() {
     if (!this.state.data || this.state.numDays === 0 || !this.state.itemHeight) {
@@ -338,7 +338,7 @@ export default class CalendarScroller extends Component {
         onLayout={this.onLayout}
       >
         <RecyclerListView
-          ref={rlv => this.rlv = rlv}
+          ref={(rlv) => (this.rlv = rlv)}
           layoutProvider={this.state.layoutProvider}
           dataProvider={this.state.dataProvider}
           rowRenderer={this.rowRenderer}
@@ -353,7 +353,7 @@ export default class CalendarScroller extends Component {
             onMomentumScrollBegin: this.onScrollStart,
             onMomentumScrollEnd: this.onScrollEnd,
             onScrollBeginDrag: this.onScrollBeginDrag,
-            ...pagingProps
+            ...pagingProps,
           }}
         />
       </View>

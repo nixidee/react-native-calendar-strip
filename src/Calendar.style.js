@@ -65,7 +65,8 @@ export default StyleSheet.create({
     height: 6,
     marginTop: 1,
     borderRadius: 5,
-    opacity: 0
+    opacity: 0,
+    marginHorizontal: 0.5
   },
 
   // CALENDAR DOTS
