@@ -38,6 +38,9 @@ export default StyleSheet.create({
   //CALENDAR DAY
   dateRootContainer: {
     flex: 1,
+    borderRadius: 25,
+    backgroundColor: 'white',
+    overflow: 'hidden'
   },
   dateContainer: {
     justifyContent: "center",
