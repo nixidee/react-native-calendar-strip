@@ -8,7 +8,6 @@ import { View, Animated, PixelRatio } from "react-native";
 
 import moment from "moment";
 
-import CustomCalendarHeader from "../../../src/screens/book/tariffs/components/modalCalendar/CalendarHeader.js";
 import CalendarHeader from "./CalendarHeader";
 import CalendarDay from "./CalendarDay";
 import WeekSelector from "./WeekSelector";
@@ -492,12 +491,7 @@ class CalendarStrip extends Component {
           break;
         }
         if (date.isSame(startingDate, "day")) {
-          //initialScrollerIndex = i;
-          if (moment(selectedDate).clone().weekday() < moment(minDate).clone().weekday()) {
-            initialScrollerIndex = i - 7;
-          } else {
-            initialScrollerIndex = i;
-          }
+          initialScrollerIndex = i;
         }
         datesList.push({date});
       }
@@ -542,24 +536,6 @@ class CalendarStrip extends Component {
     return (
       <CalendarDay {...props} />
     );
-  }
-
-  renderCustomHeader() {
-    if (CustomCalendarHeader) {
-      return (
-        <CustomCalendarHeader
-          calendarHeaderFormat={this.props.calendarHeaderFormat}
-          onPreviousWeek={this.getPreviousWeek}
-          onNextWeek={this.getNextWeek}
-          onHeaderSelected={this.props.onHeaderSelected}
-          weekStartDate={this.state.weekStartDate}
-          weekEndDate={this.state.weekEndDate}
-          headerText={this.props.headerText}
-        />
-       );
-    } else {
-      return null;
-    }
   }
 
   renderHeader() {
@@ -607,61 +583,57 @@ class CalendarStrip extends Component {
     // calendarHeader renders above or below of the dates & left/right selectors if dates are shown.
     // However if dates are hidden, the header shows between the left/right selectors.
     return (
-      <View>
-        {this.renderCustomHeader()}
-        <View
-          style={[
-            styles.calendarContainer,
-            { backgroundColor: this.props.calendarColor },
-            this.props.style
-          ]}
-        >
-          <View style={[this.props.innerStyle, { height: this.state.height }]}>
-            {this.props.showDate && this.props.calendarHeaderPosition === "above" &&
-              this.renderHeader()
-            }
+      <View
+        style={[
+          styles.calendarContainer,
+          { backgroundColor: this.props.calendarColor },
+          this.props.style
+        ]}
+      >
+        <View style={[this.props.innerStyle, { height: this.state.height }]}>
+          {this.props.showDate && this.props.calendarHeaderPosition === "above" &&
+            this.renderHeader()
+          }
 
-            <View style={styles.datesStrip}>
-              {/*
-                <WeekSelector
-                    controlDate={this.props.minDate}
-                    iconComponent={this.props.leftSelector}
-                    iconContainerStyle={this.props.iconContainer}
-                    iconInstanceStyle={this.props.iconLeftStyle}
-                    iconStyle={this.props.iconStyle}
-                    imageSource={this.props.iconLeft}
-                    onPress={this.getPreviousWeek}
-                    weekStartDate={this.state.weekStartDate}
-                    weekEndDate={this.state.weekEndDate}
-                    size={this.state.selectorSize}
-                /> */}
+          <View style={styles.datesStrip}>
+            <WeekSelector
+              controlDate={this.props.minDate}
+              iconComponent={this.props.leftSelector}
+              iconContainerStyle={this.props.iconContainer}
+              iconInstanceStyle={this.props.iconLeftStyle}
+              iconStyle={this.props.iconStyle}
+              imageSource={this.props.iconLeft}
+              onPress={this.getPreviousWeek}
+              weekStartDate={this.state.weekStartDate}
+              weekEndDate={this.state.weekEndDate}
+              size={this.state.selectorSize}
+            />
 
-              <View onLayout={this.onLayout} style={styles.calendarDates}>
-                {this.props.showDate ? (
-                  this.renderWeekView(this.state.days)
-                ) : (
-                  this.renderHeader()
-                )}
-              </View>
-
-              {/*<WeekSelector
-                  controlDate={this.props.maxDate}
-                  iconComponent={this.props.rightSelector}
-                  iconContainerStyle={this.props.iconContainer}
-                  iconInstanceStyle={this.props.iconRightStyle}
-                  iconStyle={this.props.iconStyle}
-                  imageSource={this.props.iconRight}
-                  onPress={this.getNextWeek}
-                  weekStartDate={this.state.weekStartDate}
-                  weekEndDate={this.state.weekEndDate}
-                  size={this.state.selectorSize}
-              />*/}
+            <View onLayout={this.onLayout} style={styles.calendarDates}>
+              {this.props.showDate ? (
+                this.renderWeekView(this.state.days)
+              ) : (
+                this.renderHeader()
+              )}
             </View>
 
-            {this.props.showDate && this.props.calendarHeaderPosition === "below" &&
-              this.renderHeader()
-            }
+            <WeekSelector
+              controlDate={this.props.maxDate}
+              iconComponent={this.props.rightSelector}
+              iconContainerStyle={this.props.iconContainer}
+              iconInstanceStyle={this.props.iconRightStyle}
+              iconStyle={this.props.iconStyle}
+              imageSource={this.props.iconRight}
+              onPress={this.getNextWeek}
+              weekStartDate={this.state.weekStartDate}
+              weekEndDate={this.state.weekEndDate}
+              size={this.state.selectorSize}
+            />
           </View>
+
+          {this.props.showDate && this.props.calendarHeaderPosition === "below" &&
+            this.renderHeader()
+          }
         </View>
       </View>
     );

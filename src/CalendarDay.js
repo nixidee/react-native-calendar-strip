@@ -464,7 +464,7 @@ class CalendarDay extends Component {
     let responsiveDateContainerStyle = {
       width: containerWidth,
       height: containerHeight,
-      //borderRadius: containerBorderRadius,
+      borderRadius: containerBorderRadius,
     };
 
     let containerStyle = selected

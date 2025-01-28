@@ -39,10 +39,8 @@ export default class CalendarScroller extends Component {
     this.timeoutResetPositionId = null;
 
     this.updateLayout = renderDayParams => {
-      //const itemHeight = renderDayParams.height;
-      const itemHeight = renderDayParams.dayContainerStyle?.height ? renderDayParams.dayContainerStyle?.height : renderDayParams.height;
-      //const itemWidth = renderDayParams.width + renderDayParams.marginHorizontal * 2;
-      const itemWidth = renderDayParams.dayContainerStyle?.height && renderDayParams.dayContainerStyle?.marginHorizontal ? renderDayParams.dayContainerStyle?.height + renderDayParams.dayContainerStyle?.marginHorizontal * 2 : renderDayParams.width + renderDayParams.marginHorizontal * 2;
+      const itemHeight = renderDayParams.height;
+      const itemWidth = renderDayParams.width + renderDayParams.marginHorizontal * 2;
 
       const layoutProvider = new LayoutProvider(
         (index) => 0, // only 1 view type
@@ -60,29 +58,10 @@ export default class CalendarScroller extends Component {
     });
 
     this.updateDaysData = (data) => {
-      //return {
-      //  data,
-      //  numDays: data.length,
-      //  dataProvider: this.dataProvider.cloneWithRows(data),
-      const {minDate} = this.props;
-      let newData = [];
-      if (minDate) {
-        let lastData = [];
-        for (let i = 0; i < data.length; i++) {
-          if (!data[i].date.isBefore(minDate, "day")) {
-            newData.push(data[i]);
-          } else {
-           lastData.push(data[i])
-          }
-        }
-        newData = newData.concat(lastData);
-      } else {
-        newData = data;
-      }
       return {
-        data: newData,
-        numDays: newData.length,
-        dataProvider: this.dataProvider.cloneWithRows(newData),
+        data,
+        numDays: data.length,
+        dataProvider: this.dataProvider.cloneWithRows(data),
       };
     };
 
@@ -259,8 +238,7 @@ export default class CalendarScroller extends Component {
     {
       const visStart = visibleStartDate && visibleStartDate.clone();
       const visEnd = visibleEndDate && visibleEndDate.clone();
-      //onWeekChanged && onWeekChanged(visStart, visEnd); //original
-      onWeekChanged && onWeekChanged(visStart, visEnd, visibleStartIndex); //patch
+      onWeekChanged && onWeekChanged(visStart, visEnd);
     }
 
     // Always update weekstart/end for WeekSelectors.
