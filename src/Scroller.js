@@ -11,6 +11,20 @@ import PropTypes from "prop-types";
 import { RecyclerListView, DataProvider, LayoutProvider } from "recyclerlistview";
 import moment from "moment";
 
+const scrollDirectionTypes = {
+  START: "start",
+  LEFT: "left",
+  RIGHT: "right",
+  END: "end",
+  SCROLL: "scroll",
+};
+
+const scrollTypeTypes = {
+  START: "start",
+  BUTTONS: "buttons",
+  SCROLL: "scroll",
+};
+
 export default class CalendarScroller extends Component {
   static propTypes = {
     data: PropTypes.array.isRequired,
@@ -69,6 +83,10 @@ export default class CalendarScroller extends Component {
       ...this.updateLayout(props.renderDayParams),
       ...this.updateDaysData(props.data),
       numVisibleItems: 1, // updated in onLayout
+      scrollStartIndexState: null,
+      scrollToIndexState: null,
+      scrollDirection: scrollDirectionTypes.START,
+      scrollType: scrollTypeTypes.START,
     };
   }
 
@@ -113,21 +131,44 @@ export default class CalendarScroller extends Component {
       return;
     }
     const newIndex = Math.max(this.state.visibleStartIndex - this.state.numVisibleItems, 0);
+    //console.log("calendar-stripe DEBI scroller scrollLeft newIndex", newIndex);
+    //console.log("calendar-stripe DEBI scroller scrollLeft this.state.visibleStartIndex", this.state.visibleStartIndex);
+    this.setState({
+      scrollDirection: scrollDirectionTypes.LEFT,
+      scrollType: scrollTypeTypes.BUTTONS,
+      scrollStartIndexState: this.state.visibleStartIndex,
+      scrollToIndexState: newIndex,
+    });
     this.rlv?.scrollToIndex(newIndex, true);
   };
 
   // Scroll right, guarding against end index.
   scrollRight = () => {
     const newIndex = this.state.visibleStartIndex + this.state.numVisibleItems;
+    //console.log("calendar-stripe DEBI scroller scrollRight newIndex", newIndex);
+    //console.log("calendar-stripe DEBI scroller scrollRight this.state.visibleStartIndex", this.state.visibleStartIndex);
     if (newIndex >= (this.state.numDays - 1)) {
+      this.setState({
+        scrollDirection: scrollDirectionTypes.END,
+        scrollType: scrollTypeTypes.BUTTONS,
+        scrollStartIndexState: this.state.visibleStartIndex,
+        scrollToIndexState: null,
+      });
       this.rlv?.scrollToEnd(true); // scroll to the very end, including padding
       return;
     }
+    this.setState({
+      scrollDirection: scrollDirectionTypes.RIGHT,
+      scrollType: scrollTypeTypes.BUTTONS,
+      scrollStartIndexState: this.state.visibleStartIndex,
+      scrollToIndexState: newIndex,
+    });
     this.rlv?.scrollToIndex(newIndex, true);
   };
 
   // Scroll to given date, and check against min and max date if available.
   scrollToDate = (date) => {
+    console.log("calendar-stripe scroller scrollToDate", date.format("YYYY-MM-DD"));
     let targetDate = moment(date).subtract(Math.round(this.state.numVisibleItems / 2) - 1, "days");
     const {
       minDate,
@@ -164,6 +205,8 @@ export default class CalendarScroller extends Component {
   };
 
   updateDays = (prevVisStart, newStartDate) => {
+    console.log("calendar-stripe DEBI2 scroller updateDays prevVisStart", prevVisStart.format("YYYY-MM-DD"));
+    console.log("calendar-stripe DEBI2 scroller updateDays newStartDate", newStartDate.format("YYYY-MM-DD"));
     if (this.shifting) {
       return;
     }
@@ -217,10 +260,22 @@ export default class CalendarScroller extends Component {
       numVisibleItems,
       visibleStartDate: _visStartDate,
       visibleEndDate: _visEndDate,
+      scrollStartIndexState,
+      scrollToIndexState,
+      scrollDirection,
+      scrollType,
     } = this.state;
+
+    const numVisibleItemsList = all ? all.length : numVisibleItems;
+
     const visibleStartIndex = all[0];
-    const visibleStartDate = data[visibleStartIndex] ? data[visibleStartIndex].date : moment();
-    const visibleEndIndex = Math.min(visibleStartIndex + numVisibleItems - 1, data.length - 1);
+    const visibleStartIndexAdj = all[numVisibleItems === 1 ? 0 : numVisibleItems === all.length ? 0 : 1];
+
+    //console.log("calendar-stripe scroller numVisibleItems", numVisibleItems);
+    //console.log("calendar-stripe scroller numVisibleItemsList", numVisibleItemsList);
+    //const visibleStartDate = data[visibleStartIndex] ? data[visibleStartIndex].date : moment();
+    const visibleStartDate = data[visibleStartIndexAdj] ? data[visibleStartIndexAdj].date : moment();
+    const visibleEndIndex = Math.min(visibleStartIndex + numVisibleItemsList - 1, data.length - 1);
     const visibleEndDate = data[visibleEndIndex] ? data[visibleEndIndex].date : moment();
 
     const {
@@ -238,7 +293,15 @@ export default class CalendarScroller extends Component {
     {
       const visStart = visibleStartDate && visibleStartDate.clone();
       const visEnd = visibleEndDate && visibleEndDate.clone();
-      onWeekChanged && onWeekChanged(visStart, visEnd);
+      onWeekChanged && onWeekChanged(
+          visStart,
+          visEnd,
+          {
+            scrollStartIndex: scrollStartIndexState,
+            scrollToIndex: scrollToIndexState,
+            scrollDirection: scrollDirection,
+            scrollType:scrollType
+          });
     }
 
     // Always update weekstart/end for WeekSelectors.
@@ -247,8 +310,8 @@ export default class CalendarScroller extends Component {
     if (visibleStartIndex === 0) {
       this.shiftDaysBackward(visibleStartDate);
     } else {
-      const minEndOffset = numDays - numVisibleItems;
-      if (minEndOffset > numVisibleItems) {
+      const minEndOffset = numDays - numVisibleItemsList;
+      if (minEndOffset > numVisibleItemsList) {
         for (let a of all) {
           if (a > minEndOffset) {
             this.shiftDaysForward(visibleStartDate);
@@ -257,6 +320,17 @@ export default class CalendarScroller extends Component {
         }
       }
     }
+    console.log("calendar-stripe scroller visibleStartDate", visibleStartDate.format("YYYY-MM-DD"));
+    console.log("calendar-stripe scroller visibleEndDate", visibleEndDate.format("YYYY-MM-DD"));
+    //console.log("calendar-stripe scroller visibleStartIndex", visibleStartIndex);
+    //console.log("calendar-stripe scroller visibleStartIndexAdj", visibleStartIndexAdj);
+    //console.log("calendar-stripe scroller visibleEndIndex", visibleEndIndex);
+    //console.log("calendar-stripe scroller all", all);
+    //console.log("calendar-stripe scroller data", data);
+    //console.log("calendar-stripe scroller numDays", numDays);
+    //console.log("calendar-stripe this.state", this.state);
+
+
     this.setState({
       visibleStartDate,
       visibleEndDate,
@@ -276,6 +350,9 @@ export default class CalendarScroller extends Component {
   onScrollEnd = () => {
     const {onWeekScrollEnd} = this.props;
     const {visibleStartDate, visibleEndDate, prevEndDate} = this.state;
+    console.log("calendar-stripe scroller onScrollEnd visibleStartDate", visibleStartDate.format("YYYY-MM-DD"));
+    console.log("calendar-stripe scroller onScrollEnd visibleEndDate", visibleEndDate.format("YYYY-MM-DD"));
+    console.log("calendar-stripe scroller onScrollEnd prevEndDate", prevEndDate.format("YYYY-MM-DD"));
 
     if (onWeekScrollEnd && visibleStartDate && visibleEndDate) {
       if (!visibleEndDate.isSame(prevEndDate, "day")) {
@@ -289,6 +366,13 @@ export default class CalendarScroller extends Component {
       onWeekScrollStart,
       onWeekScrollEnd,
     } = this.props;
+
+    this.setState({
+      scrollDirection: scrollDirectionTypes.SCROLL,
+      scrollType: scrollTypeTypes.SCROLL,
+      scrollStartIndexState: this.state.visibleStartIndex,
+      scrollToIndexState: null,
+    });
     // Prev dates required only if scroll callbacks are defined
     if (!onWeekScrollStart && !onWeekScrollEnd) {
       return;

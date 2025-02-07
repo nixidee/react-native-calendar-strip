@@ -161,6 +161,13 @@ class CalendarStrip extends Component {
     let days = {};
     let updateState = false;
 
+    !this.compareDates(prevProps.startingDate, this.props.startingDate) && console.log('startingDate changed');
+    !this.compareDates(prevProps.selectedDate, this.props.selectedDate) && console.log('selectedDate changed');
+    prevProps.datesBlacklist !== this.props.datesBlacklist && console.log('datesBlacklist changed');
+    prevProps.datesWhitelist !== this.props.datesWhitelist && console.log('datesWhitelist changed');
+    prevProps.markedDates  !== this.props.markedDates  && console.log('markedDates changed');
+    prevProps.customDatesStyles !== this.props.customDatesStyles && console.log('customDatesStyles changed');
+
     if (!this.compareDates(prevProps.startingDate, this.props.startingDate) ||
         !this.compareDates(prevProps.selectedDate, this.props.selectedDate) ||
         prevProps.datesBlacklist !== this.props.datesBlacklist ||
@@ -349,6 +356,8 @@ class CalendarStrip extends Component {
   // Responsive sizing based on container width.
   // Debounce to prevent rapid succession of onLayout calls from thrashing.
   onLayout = event => {
+    //console.log('onLayout event.nativeEvent.layout.width', event?.nativeEvent?.layout?.width);
+    //console.log('onLayout this.layout.width', this.layout?.width);
     if (event.nativeEvent.layout.width === this.layout.width) {
       return;
     }
@@ -373,18 +382,22 @@ class CalendarStrip extends Component {
       scrollable,
       dayComponentHeight,
     } = this.props;
+    let marginHorizontal = 1;
     let csWidth = PixelRatio.roundToNearestPixel(layout.width);
-    let dayComponentWidth = csWidth / numDaysInWeek + responsiveSizingOffset;
+    let dayComponentWidth = Math.round(csWidth / numDaysInWeek + responsiveSizingOffset - marginHorizontal * 2);
     dayComponentWidth = Math.min(dayComponentWidth, maxDayComponentSize);
     dayComponentWidth = Math.max(dayComponentWidth, minDayComponentSize);
     let numVisibleDays = numDaysInWeek;
-    let marginHorizontal;
+
     if (scrollable) {
       numVisibleDays = Math.floor(csWidth / dayComponentWidth);
       // Scroller requires spacing between days
-      marginHorizontal = Math.round(dayComponentWidth * 0.05);
-      dayComponentWidth = Math.round(dayComponentWidth * 0.9);
+      //marginHorizontal = Math.round(dayComponentWidth * 0.05);
+      //dayComponentWidth = Math.round(dayComponentWidth * 0.9);
     }
+    //console.log('dayComponentWidth', dayComponentWidth);
+    //console.log('marginHorizontal', marginHorizontal);
+
     let monthFontSize = Math.round(dayComponentWidth / 3.2);
     let selectorSize = Math.round(dayComponentWidth / 2.5);
     let height = showMonth ? monthFontSize : 0;
@@ -519,13 +532,7 @@ class CalendarStrip extends Component {
 
       const _weekStartDate = weekStartDate && weekStartDate.clone();
       const _weekEndDate = weekEndDate && weekEndDate.clone();
-      //onWeekChanged && onWeekChanged(_weekStartDate, _weekEndDate);
-      if (
-          !weekStartDate.isSame(this.state.weekStartDate, "day") ||
-          !weekEndDate.isSame(this.state.weekEndDate, "day")
-      ) {
-        onWeekChanged && onWeekChanged(_weekStartDate, _weekEndDate);
-      }
+      onWeekChanged && onWeekChanged(_weekStartDate, _weekEndDate);
     }
     // else Scroller sets weekStart/EndDate and fires onWeekChanged.
 

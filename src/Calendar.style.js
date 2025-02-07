@@ -29,7 +29,8 @@ export default StyleSheet.create({
   iconContainer: {
     justifyContent: "center",
     alignItems: "center",
-    alignSelf: "center"
+    alignSelf: "center",
+    width: 16
   },
   icon: {
     resizeMode: "contain"
